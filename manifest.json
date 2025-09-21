@@ -1,6 +1,6 @@
 {
     "manifest_version": 3,
-    "name": "YouTube PiP Dragger",
+    "name": "PiP - YouTube PiP",
     "version": "1.0",
     "description": "Toggle Picture-in-Picture for YouTube videos — draggable window outside browser.",
     "permissions": [
