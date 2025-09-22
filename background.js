@@ -7,6 +7,13 @@ chrome.action.onClicked.addListener(async (tab) => {
     }
     
     try {
+      // Inject content script first to ensure it's available
+      await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        files: ['content_script.js']
+      });
+      
+      // Then execute the PiP toggle function
       await chrome.scripting.executeScript({
         target: { tabId: tab.id },
         func: () => {
