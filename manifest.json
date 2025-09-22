@@ -5,12 +5,7 @@
     "description": "Toggle Picture-in-Picture for YouTube videos — draggable window outside browser.",
     "permissions": [
       "activeTab",
-      "scripting",
-      "tabs"
-    ],
-    "host_permissions": [
-      "https://www.youtube.com/*",
-      "https://*.youtube.com/*"
+      "scripting"
     ],
     "action": {
       "default_title": "Toggle PiP"
