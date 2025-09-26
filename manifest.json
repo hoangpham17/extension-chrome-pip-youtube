@@ -1,11 +1,18 @@
 {
     "manifest_version": 3,
     "name": "PiP - YouTube PiP",
-    "version": "1.0",
+    "version": "1.1",
     "description": "Toggle Picture-in-Picture for YouTube videos — draggable window outside browser.",
     "permissions": [
       "activeTab",
       "scripting"
+    ],
+    "content_scripts": [
+      {
+        "matches": ["https://www.youtube.com/*", "https://*.youtube.com/*"],
+        "js": ["youtube_toolbar_button.js"],
+        "run_at": "document_end"
+      }
     ],
     "action": {
       "default_title": "Toggle PiP"
