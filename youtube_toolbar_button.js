@@ -3,7 +3,6 @@
     
     // Check if PiP is supported
     if (!('pictureInPictureEnabled' in document)) {
-        console.log('PiP not supported in this browser');
         return;
     }
 
@@ -82,17 +81,14 @@
 
         const video = document.querySelector('video');
         if (!video) {
-            console.log('No video element found');
             return;
         }
 
         try {
             if (document.pictureInPictureElement) {
                 await document.exitPictureInPicture();
-                console.log('Exited Picture-in-Picture');
             } else {
                 await video.requestPictureInPicture();
-                console.log('Entered Picture-in-Picture');
             }
         } catch (error) {
             console.error('PiP error:', error);
@@ -103,12 +99,12 @@
     function placePiPButton() {
         const rightControls = document.querySelector('.ytp-right-controls');
         if (!rightControls) {
-            console.log('ytp-right-controls not found');
             return;
         }
 
         // Check if button already exists
         if (document.getElementById(BUTTON_ID)) {
+            stopPolling();
             return;
         }
 
@@ -117,7 +113,8 @@
         // Insert the button at the beginning of right controls (leftmost position)
         rightControls.insertBefore(button, rightControls.firstChild);
         
-        console.log('PiP button added to YouTube toolbar');
+        // Stop polling since button is successfully placed
+        stopPolling();
     }
 
     // Remove the PiP button
@@ -127,6 +124,8 @@
             button.remove();
             pipButton = null;
         }
+        // Restart polling when button is removed (e.g., navigating away from video)
+        startPolling();
     }
 
     // Check if we're on a video page
@@ -137,8 +136,17 @@
     // Main function to handle button placement
     function handlePageChange() {
         if (isVideoPage()) {
-            // Small delay to ensure YouTube controls are loaded
-            setTimeout(placePiPButton, 1000);
+            // Try multiple times with increasing delays to ensure YouTube controls are loaded
+            const tryPlaceButton = (attempt = 1) => {
+                const rightControls = document.querySelector('.ytp-right-controls');
+                if (rightControls && !document.getElementById(BUTTON_ID)) {
+                    placePiPButton();
+                } else if (attempt < 5) {
+                    // Try again with exponential backoff: 500ms, 1s, 2s, 4s
+                    setTimeout(() => tryPlaceButton(attempt + 1), 500 * Math.pow(2, attempt - 1));
+                }
+            };
+            tryPlaceButton();
         } else {
             removePiPButton();
         }
@@ -160,7 +168,11 @@
                     if (addedNodes.some(node => 
                         node.nodeType === Node.ELEMENT_NODE && 
                         (node.classList?.contains('ytp-right-controls') || 
-                         node.querySelector?.('.ytp-right-controls'))
+                         node.querySelector?.('.ytp-right-controls') ||
+                         node.classList?.contains('ytp-chrome-bottom') ||
+                         node.querySelector?.('.ytp-chrome-bottom') ||
+                         node.tagName === 'VIDEO' ||
+                         node.querySelector?.('video'))
                     )) {
                         shouldUpdate = true;
                     }
@@ -178,29 +190,73 @@
         });
     }
 
-    // Handle browser navigation (back/forward)
+    // Track current URL to detect SPA navigation
+    let currentUrl = window.location.href;
+
+    // Handle browser navigation (back/forward) and SPA navigation
     function handleNavigation() {
         const originalPushState = history.pushState;
         const originalReplaceState = history.replaceState;
 
         history.pushState = function() {
             originalPushState.apply(history, arguments);
-            setTimeout(handlePageChange, 500);
+            checkUrlChange();
         };
 
         history.replaceState = function() {
             originalReplaceState.apply(history, arguments);
-            setTimeout(handlePageChange, 500);
+            checkUrlChange();
         };
 
         window.addEventListener('popstate', () => {
-            setTimeout(handlePageChange, 500);
+            checkUrlChange();
         });
+
+        // Also listen for YouTube's custom navigation events
+        window.addEventListener('yt-navigate-start', () => {
+        });
+
+        window.addEventListener('yt-navigate-finish', () => {
+            setTimeout(handlePageChange, 100);
+        });
+    }
+
+    // Check if URL has changed and handle accordingly
+    function checkUrlChange() {
+        const newUrl = window.location.href;
+        if (newUrl !== currentUrl) {
+            currentUrl = newUrl;
+            setTimeout(handlePageChange, 100);
+        }
+    }
+
+    // Backup polling mechanism to ensure button is placed
+    let pollingInterval = null;
+    
+    function startPolling() {
+        if (pollingInterval) {
+            clearInterval(pollingInterval);
+        }
+        
+        pollingInterval = setInterval(() => {
+            if (isVideoPage() && !document.getElementById(BUTTON_ID)) {
+                const rightControls = document.querySelector('.ytp-right-controls');
+                if (rightControls) {
+                    placePiPButton();
+                }
+            }
+        }, 2000); // Check every 2 seconds
+    }
+    
+    function stopPolling() {
+        if (pollingInterval) {
+            clearInterval(pollingInterval);
+            pollingInterval = null;
+        }
     }
 
     // Initialize
     function init() {
-        console.log('YouTube PiP Extension: Initializing toolbar button');
         
         // Initial placement
         handlePageChange();
@@ -210,6 +266,9 @@
         
         // Handle navigation
         handleNavigation();
+        
+        // Start backup polling
+        startPolling();
     }
 
     // Start when DOM is ready
