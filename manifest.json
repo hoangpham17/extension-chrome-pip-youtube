@@ -1,28 +1,24 @@
 {
-    "manifest_version": 3,
-    "name": "PiP - YouTube PiP",
-    "version": "1.1",
-    "description": "Toggle Picture-in-Picture for YouTube videos — draggable window outside browser.",
-    "permissions": [
-      "activeTab",
-      "scripting"
-    ],
-    "content_scripts": [
-      {
-        "matches": ["https://www.youtube.com/*", "https://*.youtube.com/*"],
-        "js": ["youtube_toolbar_button.js"],
-        "run_at": "document_end"
-      }
-    ],
-    "action": {
-      "default_title": "Toggle PiP"
-    },
-    "background": {
-      "service_worker": "background.js"
-    },
-    "icons": {
-      "16": "icons/icon16.png",
-      "128": "icons/icon128.png"
+  "manifest_version": 3,
+  "name": "PiP - YouTube PiP",
+  "version": "1.3",
+  "description": "Toggle Picture-in-Picture for YouTube videos — draggable window outside browser.",
+  "permissions": ["activeTab", "scripting"],
+  "content_scripts": [
+    {
+      "matches": ["https://www.youtube.com/*", "https://*.youtube.com/*"],
+      "js": ["youtube_toolbar_button.js"],
+      "run_at": "document_end"
     }
+  ],
+  "action": {
+    "default_title": "Toggle PiP"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "128": "icons/icon128.png"
   }
-  
+}
