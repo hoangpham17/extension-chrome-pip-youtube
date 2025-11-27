@@ -25,7 +25,7 @@ scripting: Used only to inject code into the current YouTube page to enable PiP 
 Changes to This Policy
 If we make any changes to this Privacy Policy, we will update this page.
 
-📄 Privacy Policy – Vietnamese Version (bản phụ để bạn để trên website nếu muốn)
+📄 Privacy Policy – Vietnamese Version
 
 Chính Sách Quyền Riêng Tư
 
